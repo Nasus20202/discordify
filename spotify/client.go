@@ -1,4 +1,4 @@
-package discordify
+package spotify
 
 import (
 	"context"
@@ -6,32 +6,29 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sync"
 
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"golang.org/x/oauth2"
 )
 
-const (
-	port      = ":8888"
-	endpoint  = "/callback"
-	state     = "discordify"
-	cacheFile = ".refresh_token"
-)
-
 var (
-	redirectURI = "http://localhost" + port + endpoint
-	ch          = make(chan *spotify.Client)
-	auth        *spotifyauth.Authenticator
-	onceAuth    sync.Once
-	url         string
+	ch     = make(chan *spotify.Client)
+	auth   *spotifyauth.Authenticator
+	url    string
+	client *spotify.Client
 )
 
 func GetClient(ctx context.Context) (*spotify.Client, error) {
-	onceAuth.Do(func() {
-		auth = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI), spotifyauth.WithScopes(spotifyauth.ScopeUserReadCurrentlyPlaying, spotifyauth.ScopeUserReadPlaybackState))
-	})
+	if client != nil {
+		return client, nil
+	}
+
+	if os.Getenv(spotifyIDEnv) == "" || os.Getenv(spotifySecretEnv) == "" {
+		return nil, fmt.Errorf("missing %s or %s environment variable", spotifyIDEnv, spotifySecretEnv)
+	}
+
+	auth = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI), spotifyauth.WithScopes(spotifyauth.ScopeUserReadCurrentlyPlaying, spotifyauth.ScopeUserReadPlaybackState))
 
 	if _, err := os.Stat(cacheFile); err == nil {
 		refreshToken, err := os.ReadFile(cacheFile)
@@ -39,7 +36,8 @@ func GetClient(ctx context.Context) (*spotify.Client, error) {
 			return nil, err
 		}
 
-		return spotify.New(auth.Client(ctx, &oauth2.Token{RefreshToken: string(refreshToken)})), nil
+		client := spotify.New(auth.Client(ctx, &oauth2.Token{RefreshToken: string(refreshToken)}))
+		return client, nil
 	}
 
 	srv := &http.Server{Addr: port}
@@ -53,11 +51,11 @@ func GetClient(ctx context.Context) (*spotify.Client, error) {
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
-		log.Println("Server is shutting down...")
+		log.Print("Server is shutting down...")
 	}()
 
 	url = auth.AuthURL(state)
-	log.Println("Please log in to Spotify by visiting the following page in your browser:", url)
+	log.Print("Please log in to Spotify by visiting the following page in your browser:", url)
 
 	client := <-ch
 
@@ -91,6 +89,6 @@ func completeAuth(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := spotify.New(auth.Client(r.Context(), tok))
-	fmt.Fprintf(w, "Login Completed!")
+	w.Write([]byte("Login Completed!"))
 	ch <- client
 }
