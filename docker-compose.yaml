@@ -1,0 +1,16 @@
+services:
+  discordify:
+    build: .
+    container_name: discordify
+    restart: always
+    environment:
+      - SPOTIFY_ID=${SPOTIFY_ID}
+      - SPOTIFY_SECRET=${SPOTIFY_SECRET}
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    volumes:
+      - ./data:/app/data
+    ports:
+      - 8888:8888
+    command:
+      - ./discordify
+      - -cache=/app/data/refresh_token

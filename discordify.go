@@ -13,12 +13,12 @@ import (
 
 const (
 	interval                = 500 * time.Millisecond
-	statusTypeDurationTicks = 4
+	statusTypeDurationTicks = 6
 	emoji                   = "🎶"
 )
 
 func RunLoop(ctx context.Context) error {
-	log.Println("Starting Discordify...")
+	log.Print("Starting Discordify...")
 
 	client, err := client.GetClient(ctx)
 	if err != nil {
@@ -41,7 +41,7 @@ func RunLoop(ctx context.Context) error {
 		<-ticker.C
 
 		if err := tick(ctx, counter, client); err != nil {
-			log.Println("Error:", err)
+			log.Print("Error:", err)
 		}
 		counter++
 	}

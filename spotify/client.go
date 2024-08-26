@@ -36,6 +36,8 @@ func GetClient(ctx context.Context) (*spotify.Client, error) {
 			return nil, err
 		}
 
+		log.Print("Using refresh token from cache")
+
 		client := spotify.New(auth.Client(ctx, &oauth2.Token{RefreshToken: string(refreshToken)}))
 		return client, nil
 	}
@@ -47,7 +49,7 @@ func GetClient(ctx context.Context) (*spotify.Client, error) {
 	})
 
 	go func() {
-		log.Printf("Server is running on localhost%s\n", port)
+		log.Printf("Server is running on %s%s\n", host, port)
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
@@ -71,6 +73,8 @@ func GetClient(ctx context.Context) (*spotify.Client, error) {
 	if err := os.WriteFile(cacheFile, []byte(token.RefreshToken), 0644); err != nil {
 		return nil, err
 	}
+
+	log.Print("Refresh token saved to cache")
 
 	return client, nil
 }

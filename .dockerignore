@@ -1,0 +1,10 @@
+# Exclude "build-time" ignore files.
+.dockerignore
+
+# Exclude git history and configuration.
+.gitignore
+
+# Private files
+.env
+data
+.refresh_token

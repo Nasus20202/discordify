@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 
 	"github.com/joho/godotenv"
@@ -9,6 +10,7 @@ import (
 
 func main() {
 	godotenv.Load()
+	flag.Parse()
 
 	err := RunLoop(context.Background())
 	if err != nil {

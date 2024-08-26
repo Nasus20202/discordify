@@ -58,9 +58,9 @@ func setStatus(ctx context.Context, statusReq *StatusRequest) error {
 	currentStatus = statusReq.CustomStatus
 
 	if statusReq.CustomStatus == nil {
-		log.Println("Status cleared")
+		log.Print("Status cleared")
 	} else {
-		log.Println("Status updated to: ", statusReq.CustomStatus.Text)
+		log.Print("Status updated to: ", statusReq.CustomStatus.Text)
 	}
 	return nil
 }
