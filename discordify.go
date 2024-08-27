@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	interval                = time.Second
-	statusTypeDurationTicks = 3
+	interval                = 1500 * time.Millisecond
+	statusTypeDurationTicks = 2
 	emoji                   = "🎶"
 )
 
